@@ -1,5 +1,6 @@
 from lstore.index import Index
 from time import time
+from lstore.bufferpool import Bufferpool
 
 INDIRECTION_COLUMN = 0
 RID_COLUMN = 1
@@ -27,6 +28,7 @@ class Table:
         self.num_columns = num_columns
         self.page_directory = {}
         self.index = Index(self)
+        self.bufferpool = Bufferpool()
         self.merge_threshold_pages = 50  # The threshold to trigger a merge
         pass
 
