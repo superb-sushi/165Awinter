@@ -26,9 +26,9 @@ class Table:
         self.num_columns = num_columns
         self.page_directory = {} # RID -> (page, slot) (Where is the record 'RID' located?)
         self.index = Index(self) # Which RIDs have a specific value on a specific column?
-        self.merge_threshold_pages = 50  # The threshold to trigger a merge; functionaly implemented in Index Class
-        self.base_pages = []  # List of base pages
-        self.tail_pages = []  # List of tail pages
+        self.merge_threshold_pages = 20  # The threshold to trigger a merge; functionaly implemented in Index Class
+        self.page_ranges = []  # List of Page Ranges
+        pass
 
     def __merge(self):
         print("merge is happening")
