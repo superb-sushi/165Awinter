@@ -44,11 +44,17 @@ class Table:
 
         return self.page_ranges[-1]
 
-    def __merge(self):
-        print("merge is happening")
-        pass
-
+    def insert_base_record(self, columns):
+        page_range = self.get_active_page_range()
+        rid = self.allocate_rid()
+        slot = page_range.insert_base_record(columns)
+        self.page_directory[rid] = (page_range, slot)
+        return rid
 
     def read_latest(self, rid, column_index):
         page_range, slot = self.page_directory[rid]
         return page_range.read_base(column_index, slot)
+    
+    def __merge(self):
+        print("merge is happening")
+        pass

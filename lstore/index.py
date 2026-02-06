@@ -8,17 +8,24 @@ class ColumnIndex:
 
     def add(self, value, rid):
         if value not in self.index:
-            self.index[value] = []
-        self.index[value].append(rid)
+            self.index[value] = set()
+        self.index[value].add(rid)
+
+    def remove(self, value, rid):
+        if value in self.index:
+            self.index[value].discard(rid)
+            if not self.index[value]:
+                del self.index[value]
 
     def get_all(self, value):
-        return self.index.get(value, [])
+        return list(self.index.get(value, []))
 
 class Index:
 
     def __init__(self, table):
         # One index for each table. All are empty initially.
         self.indices = [None] *  table.num_columns # an array of lookup structures for EACH column of the table
+        self.create_index(table.key) # "Key column should be indexed by default"
 
     """
     # Returns the location of all records with the given `value` on column "column"
@@ -47,3 +54,11 @@ class Index:
     """
     def drop_index(self, column_number):
         self.indices[column_number] = None
+
+    def add(self, column, value, rid):
+        if self.indices[column] is not None:
+            self.indices[column].add(value, rid)
+    
+    def remove(self, column, value, rid):
+        if self.indices[column] is not None:
+            self.indices[column].remove(value, rid)

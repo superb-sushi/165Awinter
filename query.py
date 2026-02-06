@@ -26,9 +26,9 @@ class Query:
             if not rids: 
                 return False
 
-            rids = rids[0]
-            self.table.invalidate_record(rid)
-            self.table.index.delete(primary_key, rid)
+            rid = rids[0]
+            # self.table.invalidate_record(rid) # not yet implemented
+            self.table.index.remove(self.table.key, primary_key, rid)
             return True
         except Exception: 
             return False
@@ -42,19 +42,24 @@ class Query:
     # Returns False if insert fails for whatever reason
     """
     def insert(self, *columns):
-        schema_encoding = '0' * self.table.num_columns
+        # schema_encoding = '0' * self.table.num_columns
         try: 
             if len(columns) != self.table.num_columns: 
                 return False
             
             primary_key = columns[self.table.key]
+
+            if primary_key is None:
+                return False
         
             if self.table.index.locate(self.table.key, primary_key):
                 return False
             
-            rid = self.table.insert_record(columns)
-            self.table.index.insert(primary_key, rid)
+            rid = self.table.insert_base_record(columns)
+            self.table.index.add(self.table.key, primary_key, rid)
+
             return True
+        
         except Exception: 
             return False
     #to insert a new record.
