@@ -21,8 +21,20 @@ class Query:
     # Return False if record doesn't exist or is locked due to 2PL
     """
     def delete(self, primary_key):
-        pass
+        try:
+            rids = self.table.index.locate(self.table.key, primary_key)
+            if not rids: 
+                return False
+
+            rids = rids[0]
+            self.table.invalidate_record(rid)
+            self.table.index.delete(primary_key, rid)
+            return True
+        except Exception: 
+            return False
     
+
+        
     
     """
     # Insert a record with specified columns
@@ -31,8 +43,21 @@ class Query:
     """
     def insert(self, *columns):
         schema_encoding = '0' * self.table.num_columns
-        pass
-
+        try: 
+            if len(columns) != self.table.num_columns: 
+                return False
+            
+            primary_key = columns[self.table.key]
+        
+            if self.table.index.locate(self.table.key, primary_key):
+                return False
+            
+            rid = self.table.insert_record(columns)
+            self.table.index.insert(primary_key, rid)
+            return True
+        except Exception: 
+            return False
+    
     
     """
     # Read matching record with specified search key
@@ -44,9 +69,27 @@ class Query:
     # Assume that select will never be called on a key that doesn't exist
     """
     def select(self, search_key, search_key_index, projected_columns_index):
-        pass
+        try: 
+            rids = self.table.index.locate(search_key_index, search_key)
+            results = []
 
+            for rid in rids: 
+                if self.table.is_deleted(rid):
+                    continue
+                
+                record_columns = []
+                for i, project in enumerate(projected_columns_index):
+                    if project == 0: 
+                        record_columns.append(None)
+                    else: 
+                        value = self.table.read_latest(rid, i)
+                        record_columns.append(value)
+                results.append(Record(rid, record_columns))
+            return results
+        except Exception: 
+            return False
     
+
     """
     # Read matching record with specified search key
     # :param search_key: the value you want to search based on
@@ -58,7 +101,24 @@ class Query:
     # Assume that select will never be called on a key that doesn't exist
     """
     def select_version(self, search_key, search_key_index, projected_columns_index, relative_version):
-        pass
+        try: 
+            rids = self.table.index.locate(search_key_index, search_key)
+            results = []
+
+            for rid in rids: 
+                if self.table.is_deleted(rid):
+                    continue
+                record_columns = []
+                for i, project in enumerate(projected_columns_index): 
+                    if project == 0: 
+                        record_columns.append(None)
+                    else: 
+                        value = self.table.read_version(rid, i, relative_version)
+                        record_columns.append(value)
+                results.append(Record(rid, record_columns))
+            return results
+        except Exception: 
+            return False
 
     
     """
@@ -67,7 +127,21 @@ class Query:
     # Returns False if no records exist with given key or if the target record cannot be accessed due to 2PL locking
     """
     def update(self, primary_key, *columns):
-        pass
+        try: 
+            rids = self.table.index.locate(self.table.key, primary_key)
+            if not rids: 
+                return False
+            
+            base_rid = rids[0]
+            self.table.append_tail_record(base_rid, columns)
+
+            for i, value in enumerate(columns):
+                if value is not None and i == self.table.key: 
+                    self.table.index.delete(primary_key, base_rid)
+                    self.table.index.insert(value, base_rid)
+            return True
+        except Exception: 
+            return False
 
     
     """
@@ -79,7 +153,23 @@ class Query:
     # Returns False if no record exists in the given range
     """
     def sum(self, start_range, end_range, aggregate_column_index):
-        pass
+        try: 
+            rids = self.table.index.locate_range(start_range, end_range, self.table.key)
+            if not rids: 
+                return False
+            
+            total = 0
+            found = False
+            for rid in rids: 
+                if self.table.is_deleted(rid):
+                     continue
+                value = self.table.read_latest(rid, aggregate_column_index)
+                total += value 
+                found = True
+            return total if found else False
+        
+        except Exception: 
+            return False 
 
     
     """
@@ -92,11 +182,26 @@ class Query:
     # Returns False if no record exists in the given range
     """
     def sum_version(self, start_range, end_range, aggregate_column_index, relative_version):
-        pass
+        try: 
+            rids = self.table.index.locate_range(start_range, end_range, self.table.key)
+            if not rids: 
+                return False
+            
+            total = 0
+            found = False
+            for rid in rids:
+                if self.table.is_deleted(rid): 
+                    continue
+                value = self.table.read_version(rid, aggregate_column_index, relative_version)
+                total += value 
+                found = True
+            return total if found else False
+        except Exception: 
+            return False
 
     
     """
-    increments one column of the record
+    incremenets one column of the record
     this implementation should work if your select and update queries already work
     :param key: the primary of key of the record to increment
     :param column: the column to increment
