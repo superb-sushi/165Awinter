@@ -140,10 +140,11 @@ class Query:
             base_rid = rids[0]
             self.table.append_tail_record(base_rid, columns)
 
-            for i, value in enumerate(columns):
-                if value is not None and i == self.table.key: 
-                    self.table.index.delete(primary_key, base_rid)
-                    self.table.index.insert(value, base_rid)
+            # No need implementation for updates to PK of a record as of now
+            # for i, value in enumerate(columns):
+            #     if value is not None and i == self.table.key: 
+            #         self.table.index.remove(primary_key, base_rid)
+            #         self.table.index.add(value, base_rid)
             return True
         except Exception: 
             return False

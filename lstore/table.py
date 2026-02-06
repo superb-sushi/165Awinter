@@ -6,6 +6,7 @@ RID_COLUMN = 0
 INDIRECTION_COLUMN = 1
 SCHEMA_ENCODING_COLUMN = 2
 TIMESTAMP_COLUMN = 3
+METADATA_COLUMNS = 4
 
 class Record:
 
@@ -44,7 +45,7 @@ class Table:
 
         return self.page_ranges[-1]
 
-    def insert_record(self, *columns):
+    def insert_base_record(self, *columns):
         rid = self.allocate_rid()
         curr_page_range = self.get_active_page_range()
         values = [
@@ -62,7 +63,7 @@ class Table:
     
     def read_latest(self, rid, column_index):
         page_range, slot = self.page_directory[rid]
-        return page_range.read_base(column_index, slot)
+        return page_range.read_base(column_index + METADATA_COLUMNS, slot)
     
     def invalidate_record(self, rid):
         if rid not in self.page_directory:
@@ -81,7 +82,7 @@ class Table:
     def append_tail_record():
         pass
 
-    def is_deleted(rid):
+    def is_deleted(self, rid):
         if self.read_latest(rid, INDIRECTION_COLUMN) == -1:
             return True
         return False
