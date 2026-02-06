@@ -28,14 +28,13 @@ class Query:
 
             rids = rids[0]
             self.table.invalidate_record(rid)
-            self.table.index.delete(primary_key, rid)
+            self.table.index.delete(self.table.key, primary_key, rid)
             return True
         except Exception: 
             return False
     #Delete record when a given primary key. 
 
         
-    
     """
     # Insert a record with specified columns
     # Return True upon succesful insertion
@@ -52,8 +51,8 @@ class Query:
             if self.table.index.locate(self.table.key, primary_key):
                 return False
             
-            rid = self.table.insert_record(columns)
-            self.table.index.insert(primary_key, rid)
+            rid = self.table.insert_record(*columns)
+            self.table.index.insert(self.table.key, primary_key, rid)
             return True
         except Exception: 
             return False

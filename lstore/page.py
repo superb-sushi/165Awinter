@@ -15,14 +15,19 @@ class Page: #Physical part of memory
 
     def write(self, value):
         offset = self.num_records * VALUE_SIZE
-        self.data[offset:offset+VALUE_SIZE] = value.to_bytes(VALUE_SIZE, 'little')
+        self.data[offset:offset+VALUE_SIZE] = value.to_bytes(VALUE_SIZE, 'little', signed=True)
         self.num_records += 1
         return self.num_records - 1   # return slot
+
+    def update(self, slot, value):
+        offset = slot * VALUE_SIZE
+        self.data[offset:offset+VALUE_SIZE] = value.to_bytes(VALUE_SIZE, 'little', signed=True)
+        return
 
     def read(self, slot):
         offset = slot * VALUE_SIZE
         value_bytes = self.data[offset:offset+VALUE_SIZE]
-        return int.from_bytes(value_bytes, 'little')
+        return int.from_bytes(value_bytes, 'little', signed=True)
 
 
 class BasePage(Page):
@@ -54,6 +59,12 @@ class PageRange:
         page = self.base_pages[column_index][page_id]
         return page.read(offset)
     
+    def get_base_page(self, column_index, slot):
+        page_id = slot // MAX_RECORDS
+        offset = slot % MAX_RECORDS
+        page = self.base_pages[column_index][page_id]
+        return page
+
     def insert_base_record(self, values):
         slot = self.num_records
         for col, value in enumerate(values):
