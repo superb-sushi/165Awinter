@@ -21,7 +21,7 @@ class Index:
         self.indices = [None] *  table.num_columns # an array of lookup structures for EACH column of the table
 
     """
-    # Returns the location of all records with the given value on column "column"
+    # Returns the location of all records with the given `value` on column "column"
     """
     def locate(self, column: int, value):
         col_lookup = self.indices[column]

@@ -1,5 +1,6 @@
 from lstore.index import Index
 from time import time
+from lstore.page import BasePage, TailPage, PageRange
 
 RID_COLUMN = 0
 INDIRECTION_COLUMN = 1
@@ -22,14 +23,32 @@ class Table:
     """
     def __init__(self, name, num_columns, key):
         self.name = name
-        self.key = key
         self.num_columns = num_columns
-        self.page_directory = {} # RID -> (page, slot) (Where is the record 'RID' located?)
-        self.index = Index(self) # Which RIDs have a specific value on a specific column?
-        self.merge_threshold_pages = 20  # The threshold to trigger a merge; functionaly implemented in Index Class
-        self.page_ranges = []  # List of Page Ranges
-        pass
+        self.key = key
+
+        self.page_ranges = []
+        self.page_directory = {}   # RID -> (page_range, slot)
+
+        self.index = Index(self)
+
+        self.rid_counter = 0
+        self.merge_threshold_pages = 20
+
+    def allocate_rid(self):
+        self.rid_counter += 1
+        return self.rid_counter
+    
+    def get_active_page_range(self):
+        if len(self.page_ranges) == 0 or not self.page_ranges[-1].has_capacity():
+            self.page_ranges.append(PageRange(self.num_columns))
+
+        return self.page_ranges[-1]
 
     def __merge(self):
         print("merge is happening")
         pass
+
+
+    def read_latest(self, rid, column_index):
+        page_range, slot = self.page_directory[rid]
+        return page_range.read_base(column_index, slot)
