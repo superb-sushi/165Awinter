@@ -35,6 +35,21 @@ class Index:
         return col_lookup.get_all(value) # returns list of corresponding RIDs
 
     """
+    # Adds information about the record to the created columns
+    """
+    # are we separating column and the record, or putting them together?
+    def insert(self, column, value, rid):
+        col_lookup = self.indices[column]
+        return col_lookup.add(value, rid)
+
+    """
+    # Deletes information about the record and the created columns
+    """
+    def delete(self, column, value, rid):
+        col_lookup = self.indices[column]
+        return col_lookup.delete(value, rid)
+
+    """
     # Returns the RIDs of all records with values in column "column" between "begin" and "end"
     """
     def locate_range(self, begin, end, column: int):

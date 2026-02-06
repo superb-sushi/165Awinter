@@ -35,7 +35,6 @@ class Query:
     #Delete record when a given primary key. 
 
         
-    
     """
     # Insert a record with specified columns
     # Return True upon succesful insertion
