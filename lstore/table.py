@@ -52,9 +52,10 @@ class Table:
             rid,
             0,              # indirection col
             0,              # schema encoding
-            int(time()),
-            *columns
-        ]
+            int(time())
+        ] 
+        for c in list(columns)[0]:
+            values.append(c)
         
         slot = curr_page_range.insert_base_record(values)
         self.page_directory[rid] = (curr_page_range, slot)

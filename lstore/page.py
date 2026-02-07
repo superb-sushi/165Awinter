@@ -2,6 +2,7 @@
 VALUE_SIZE = 8
 PAGE_SIZE = 4096
 MAX_RECORDS = PAGE_SIZE // VALUE_SIZE
+METADATA_COLUMNS = 4
 
 class Page: #Physical part of memory
 
@@ -43,13 +44,13 @@ class TailPage(Page):
 class PageRange:
     def __init__(self, num_columns):
         self.num_columns = num_columns
-        self.base_pages = [[] for _ in range(num_columns)] # each col is represented by an Array of Pages
-        self.tail_pages = [[] for _ in range(num_columns)] # each col is represented by an Array of Pages
+        self.base_pages = [[] for _ in range(num_columns + METADATA_COLUMNS)] # each col is represented by an Array of Pages
+        self.tail_pages = [[] for _ in range(num_columns + METADATA_COLUMNS)] # each col is represented by an Array of Pages
         self.num_records = 0 # number of records in this page range, also used as slot for the next record to be inserted
         pass
 
     def has_capacity(self):
-        if not self.base_pages or self.base_pages[-1].num_records >= self.limit:
+        if not self.base_pages or self.base_pages[-1][-1].num_records >= self.base_pages[-1][-1].limit:
             return True
         return False
     
